@@ -58,8 +58,7 @@ Now, you have successfully created and activated the virtual environment. You ca
 
     This will install the necessary Python packages to run the program.
 
-    Note: If you are using a virtual environment, make sure to activate it before running the above command.
-<!-- optional installation instructions for setting up a virtual environment -->
+   <p style="font-style: italic;"><b>Note</b>: If you are using a virtual environment, make sure to activate it before running the above command.</p> 
 
 ## Usage
 
@@ -72,6 +71,32 @@ Now, you have successfully created and activated the virtual environment. You ca
 
    This will open a graphical user interface (GUI) window.
 3. In the GUI window, click the "Browse" button to select a CSV file containing the contacts you want to add to the WhatsApp group.
+
+    The CSV file should contain a single column with the contact names. The first row of the CSV file should contain the column name ("Name").
+
+    A sample table is shown below:
+
+    <table align="center" style="border: 1px solid black; border-collapse: collapse; text-align: center;">
+        <tr>
+            <th style="border: 1px solid black; border-collapse: collapse; text-align: center;">Name</th>
+        </tr>
+        <tr>
+            <td>John Doe</td>
+        </tr>
+        <tr>
+            <td>Jane Doe</td>
+        </tr>
+        <tr>
+            <td>John Smith</td>
+        </tr>
+        <tr>
+            <td>Jane Smith</td>
+        </tr>
+    </table>
+
+    <!-- style the below text to put emphasis on the note -->
+    <p style="font-style: italic;"><b>Note</b>: The program will not work if the CSV file contains any other columns or rows. In case of duplicate contacts, the program will add only the first occurrence of the contact to the group.</p>
+
 4. Click the "Start" button to begin the process.
 5. Within 40 seconds, log in to WhatsApp Web using your credentials.
 6. The program will automatically perform the following steps:
@@ -81,7 +106,7 @@ Now, you have successfully created and activated the virtual environment. You ca
    - Click the "Next" button to proceed to the next step.
 7. Wait for the group to be created, the group name to be entered, and the group to be opened.
 
-Note: The program uses Selenium to control the web browser and perform the necessary operations. It may take some time to execute, depending on the number of contacts and the speed of your internet connection.
+<p style="font-style: italic;"><b>Note</b>: The program uses Selenium to control the web browser and perform the necessary operations. It may take some time to execute, depending on the number of contacts and the speed of your internet connection.</p>
 
 ## Motivation
 

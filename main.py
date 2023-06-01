@@ -39,6 +39,7 @@ import pandas as pd
 from selenium.webdriver.common.keys import Keys
 import time
 from ttkthemes import ThemedTk
+import subprocess
 
 # Function to download the Chrome driver
 def download_driver():
@@ -51,30 +52,77 @@ def select_file():
         file_entry.delete(0, tk.END)
         file_entry.insert(tk.END, file_path)
 
+# Function to get the file path
+def get_file_path():
+    file_path = file_entry.get()
+    return file_path
+
+# Function to open WhatsApp Web
+def open_whatsapp_web(contacts_file):
+        # Download the Chrome driver
+        download_driver()
+
+        # Create the Chrome driver
+        options = webdriver.ChromeOptions()
+        global driver
+        driver = webdriver.Chrome(service=ChromeService(), options=options)
+
+        # Open WhatsApp Web    
+        driver.get("https://web.whatsapp.com")
+
+        # Start the countdown
+        update_countdown()
+
+        # Wait for 40 seconds before performing the operations
+        window.after(5000, perform_whatsapp_operations, driver, contacts_file)
+
+countdown_update_id = None
+
 # Function to handle the start button click
 def start_program():
-    contacts_file = file_entry.get()
+    # If the contacts file is selected, open WhatsApp Web
+    contacts_file = get_file_path()
+    try:
+        if contacts_file:
+            open_whatsapp_web(contacts_file)
+        else:
+            raise Exception("File not selected")
+    except Exception as e:
+        print(e)
+        # Create a pop-up window to inform the user that the file was not selected
+        file_error_window = tk.Toplevel(window)
+        file_error_window.title("File Error")
+        file_error_label = ttk.Label(file_error_window, text="Please select a file")
+        file_error_label.pack(padx=10, pady=10)
+        file_error_button = ttk.Button(file_error_window, text="OK", command=file_error_window.destroy)
+        file_error_button.pack(padx=10, pady=10)
+        
+        # position it on the top of all windows
+        file_error_window.attributes('-topmost', True)
+        file_error_window.after_idle(file_error_window.attributes, '-topmost', False)
+        
+        # set the window in the center of the screen
+        file_error_window_width = 200
+        file_error_window_height = 100
+        screen_width = file_error_window.winfo_screenwidth()
+        screen_height = file_error_window.winfo_screenheight()
+        x_coordinate = int((screen_width / 2) - (file_error_window_width / 2))
+        y_coordinate = int((screen_height / 2) - (file_error_window_height / 2))
+        file_error_window.geometry("{}x{}+{}+{}".format(file_error_window_width, file_error_window_height, x_coordinate, y_coordinate))
 
-    # Download the Chrome driver
-    download_driver()
+        # Restart the window
+        window.mainloop()
 
-    # Create the Chrome driver
-    options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(service=ChromeService(), options=options)
-
-    # Open WhatsApp Web
-    driver.get("https://web.whatsapp.com")
-    # Start the countdown
-    update_countdown()
-
-    # Wait for 40 seconds before performing the operations
-    window.after(40000, perform_whatsapp_operations, driver, contacts_file)
+# Function to perform the WhatsApp operations
 def perform_whatsapp_operations(driver, contacts_file):
-    # Read contacts from the CSV file
-    if contacts_file:
-        df = pd.read_csv(contacts_file)
-        contacts = df['Name'].tolist()
 
+    # Read contacts from the CSV file
+    df = pd.read_csv(contacts_file)
+    contacts = df['Name'].tolist()
+
+    # Try to perform the operations
+    try:
+        
         # Clicking on the three dots to open the menu
         menu_locator = '/html/body/div[1]/div/div/div[4]/header/div[2]/div/span/div[4]/div/span'
         menu = driver.find_element("xpath", menu_locator)
@@ -99,7 +147,35 @@ def perform_whatsapp_operations(driver, contacts_file):
         next_button = driver.find_element("xpath", next_button_locator)
         next_button.click()
 
-        time.sleep(200) # Waiting for the group to be created, group name to be entered, and group to be opened
+    except:
+
+        # Create a pop-up window to inform the user that the login was not successful
+        login_error_window = tk.Toplevel(window)
+        login_error_window.title("Login Error")
+
+        # set the window in the center of the screen
+        login_error_window_width = 200
+        login_error_window_height = 100
+        screen_width = login_error_window.winfo_screenwidth()
+        screen_height = login_error_window.winfo_screenheight()
+        x_coordinate = int((screen_width / 2) - (login_error_window_width / 2))
+        y_coordinate = int((screen_height / 2) - (login_error_window_height / 2))
+        login_error_window.geometry("{}x{}+{}+{}".format(login_error_window_width, login_error_window_height, x_coordinate, y_coordinate))
+        login_error_label = ttk.Label(login_error_window, text="Login was not successful")
+        login_error_label.pack(padx=10, pady=10)
+        login_error_button = ttk.Button(login_error_window, text="OK", command=login_error_window.destroy)
+        login_error_button.pack(padx=10, pady=10)
+
+
+        # close the driver
+        driver.quit()
+        
+        # stop the countdown and restart the window
+        stop_countdown()
+        reset_countdown()
+        window.mainloop()
+    time.sleep(200) # Waiting for the group to be created, group name to be entered, and group to be opened
+
 # Create the GUI window
 window = ThemedTk(theme="radiance")
 window.title("WhatsApp Group Maker")
@@ -137,13 +213,49 @@ countdown_label.grid(row=2, column=0, columnspan=3, pady=10)
 
 # Countdown variable
 countdown = 40
+countdown_active = True
 
 # Function to update the countdown label
 def update_countdown():
-    global countdown
+    # Use the global variable
+    global countdown, countdown_active, countdown_update_id
     countdown -= 1
     countdown_label.configure(text=f"Time Left: {countdown} seconds")
-    if countdown > 0:
-        window.after(1000, update_countdown)
+    if countdown > 0 and countdown_active:
+        # Schedule the next countdown update
+        countdown_update_id = window.after(1000, update_countdown)
+    else:
+        # Stop the countdown updates
+        countdown_active = False
 
+# Function to stop the countdown updates
+def stop_countdown():
+    print("Stopping countdown")
+    global countdown_active, countdown_update_id
+    countdown_active = False
+    window.after_cancel(countdown_update_id)
+
+# Function to reset the countdown
+def reset_countdown():
+    print("Resetting countdown")
+    global countdown, countdown_active
+    countdown = 40
+    countdown_active = True
+    countdown_label.configure(text=f"Time Left: {countdown} seconds")
+
+# 
+def on_closing():
+    global driver
+    window.destroy()  # Close the Tkinter window
+    try:
+        driver.quit()  # Close the WebDriver if it is still running
+    except NameError:
+        pass
+    print("Exiting program")
+    exit()  # Exit the program
+    
+
+window.protocol("WM_DELETE_WINDOW", on_closing)
 window.mainloop()
+
+# reset the counter
