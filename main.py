@@ -39,7 +39,7 @@ import pandas as pd
 from selenium.webdriver.common.keys import Keys
 import time
 from ttkthemes import ThemedTk
-import subprocess
+import sys
 
 # Function to download the Chrome driver
 def download_driver():
@@ -74,7 +74,7 @@ def open_whatsapp_web(contacts_file):
         update_countdown()
 
         # Wait for 40 seconds before performing the operations
-        window.after(5000, perform_whatsapp_operations, driver, contacts_file)
+        window.after(40000, perform_whatsapp_operations, driver, contacts_file)
 
 countdown_update_id = None
 
@@ -252,7 +252,7 @@ def on_closing():
     except NameError:
         pass
     print("Exiting program")
-    exit()  # Exit the program
+    sys.exit()  # Exit the program
     
 
 window.protocol("WM_DELETE_WINDOW", on_closing)
